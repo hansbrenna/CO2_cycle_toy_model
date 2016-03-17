@@ -7,11 +7,12 @@ Created on Thu Mar 17 14:06:53 2016
 from __future__ import print_function
 import numpy as np
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 mco2 = 44.0
 
 def flux(cc1,cc2,k,c):
-    f = np.abs(cc1-cc2)*k*c
+    f = abs(cc1-cc2)*k*c
     return f
 
 class reservoir():
@@ -47,8 +48,8 @@ socn = reservoir(0.025*Mocn,900e12*3.665,18)
 docn = reservoir(0.975*Mocn,37100e12*3.665,18)
 
 kao=100
-koa=100
-ksd=10000
+koa=50
+ksd=1005.51
 kds=100
 
 Fao = flux(atm.c0,socn.c0,kao,atm.mass_c0)
@@ -66,12 +67,13 @@ print(Fao,Foa,Fsd,Fds)
 t0=0
 t=t0
 dt = 1
-tstop = 10000
+tstop = 20000
 
 i=0
 while t < tstop:
-    if t == 5000:
-        atm.mass_c0+=500e12
+    #if i == np.floor(tstop/dt/2.0):
+    #    atm.mass_c0+=5000e12
+    #    print('here')
     t+=dt
     atm.update([-Fao,Foa],dt)
     socn.update([-Foa,Fao,-Fsd,Fds],dt)
@@ -87,4 +89,11 @@ while t < tstop:
     i+=1
    
 print(Fao1[-1],Foa1[-1],Fsd1[-1],Fds1[-1])
-plt.plot(np.array(atm.ml))
+f, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, sharex='col', sharey='row')
+ax1.semilogy(np.array(atm.ml))
+ax2.semilogy(np.array(socn.ml))
+ax3.semilogy(np.array(docn.ml))
+ax4.semilogy(np.array(atm.cl))
+plt.show()
+
+print(Fao1[-1]/atm.ml[-1])
