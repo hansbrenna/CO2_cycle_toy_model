@@ -48,11 +48,11 @@ socn = reservoir(0.025*Mocn,900e12*3.665,18)
 docn = reservoir(0.975*Mocn,37100e12*3.665,18)
 btm = reservoir(1.0e30,1e25,1)
 
-kao=1
-koa=1
-ksd=1
-kds=1
-kdb=1
+kao=400
+koa=260
+ksd=40#4122.142 #40
+kds=1#100 #1
+kdb=0.01
 kbd=0.0
 
 Fao = flux(atm.c0,socn.c0,kao,atm.mass_c0)
@@ -73,14 +73,18 @@ print(Fao,Foa,Fsd,Fds,Fdb,Fbd)
 
 t0=0
 t=t0
-dt = 1
-tstop = 2000000
+dt = 0.0001
+tstop = 40
 
 i=0
+max_c = 1
+s = True
 while t < tstop:
-    #if i == np.floor(tstop/dt/2.0):
-    #    atm.mass_c0+=5000e12
-    #    print('here')
+    if i == np.floor(tstop/dt/2.0):
+        atm.mass_c0+=5000e12
+        print('here')
+        max_c = atm.mass_c0
+        t_max_c = t+dt
     t+=dt
     atm.update([-Fao,Foa],dt)
     socn.update([-Foa,Fao,-Fsd,Fds],dt)
@@ -98,14 +102,25 @@ while t < tstop:
     Fds1.append(Fds)
     Fdb1.append(Fdb)
     Fbd1.append(Fbd)
+    if atm.mass_c/max_c < 1/np.e and s:
+        print('e-folding time: {0}'.format(t-t_max_c))
+        s = False
     i+=1
    
+time = np.linspace(t0,tstop,len(atm.ml))
 print(Fao1[-1],Foa1[-1],Fsd1[-1],Fds1[-1],Fdb1[-1],Fbd1[-1])
 f, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, sharex='col', sharey='row')
-ax1.semilogy(np.array(atm.ml))
-ax2.semilogy(np.array(socn.ml))
-ax3.semilogy(np.array(docn.ml))
-ax4.semilogy(np.array(atm.cl))
+ax1.semilogy(time,np.array(atm.ml))
+ax2.semilogy(time,np.array(socn.ml))
+ax3.semilogy(time,np.array(docn.ml))
+ax4.semilogy(time,np.array(atm.cl))
 plt.show()
 
+plt.figure()
+f, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, sharex='col', sharey='row')
+ax1.plot(time,np.array(atm.ml))
+ax2.plot(time,np.array(socn.ml))
+ax3.plot(time,np.array(docn.ml))
+ax4.plot(time,np.array(atm.cl))
+plt.show()
 print(Fao1[-1]/atm.ml[-1])
